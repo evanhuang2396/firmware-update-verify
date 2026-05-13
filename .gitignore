@@ -1,0 +1,13 @@
+# Local/private config
+hpm_upgrade_test.conf
+
+# Credentials
+bmc_pass
+bmc_pass_g5
+
+# Runtime logs
+logs/
+*.log
+
+# image
+*.hpm

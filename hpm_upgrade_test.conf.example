@@ -1,0 +1,22 @@
+# =============================================================================
+# HPM Upgrade Test - User Config (Example)
+#
+# Copy this file to:
+#   hpm_upgrade_test.conf
+# Then update values for your environment.
+# =============================================================================
+
+BMC_IP="192.168.10.252"
+BMC_USER="root"
+BMC_PASS_FILE="${SCRIPT_DIR}/bmc_pass"
+FW_FILE="${SCRIPT_DIR}/image/image-update-ast2600.hpm"
+HPM_FILE="${SCRIPT_DIR}/image/image-update-ast2600.hpm"
+
+# Uncomment the desired test pattern:
+TEST_CASE='spv_ipmi -U root -P ${BMC_PASS} -H ${BMC_IP} -I lanplus -C 17 -z 30000 -N 10 hpm upgrade ${FW_FILE} force activate'
+# TEST_CASE='spv_ipmi -U root -P ${BMC_PASS} -H ${BMC_IP} -I lanplus -C 17 -N 10 isc bmc update ${HPM_FILE}'
+# TEST_CASE='spv_ipmi -U root -P ${BMC_PASS} -H ${BMC_IP} -I lanplus -C 17 -N 10 isc bios update ${HPM_FILE}'
+# TEST_CASE='spv_ipmi -U root -P ${BMC_PASS} -H ${BMC_IP} -I lanplus -C 17 -N 10 isc pld update ${HPM_FILE}'
+
+# Optional log filename suffix (e.g. "_round1"). Leave empty for no suffix.
+LOG_SUFFIX=""
