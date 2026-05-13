@@ -5,20 +5,104 @@
 # =============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_FILE_DEFAULT="${SCRIPT_DIR}/hpm_upgrade_test.conf"
-CONFIG_FILE="${HPM_TEST_CONFIG:-${CONFIG_FILE_DEFAULT}}"
+CONFIG_BASENAME="hpm_upgrade_test.conf"
+CONFIG_ROOT_DIR="${SCRIPT_DIR}/conf"
+CONFIG_FILE_DEFAULT="${SCRIPT_DIR}/${CONFIG_BASENAME}"
+CONFIG_FILE="${HPM_TEST_CONFIG:-}"
+REQUESTED_PROJECT_NAME="${HPM_TEST_PROJECT:-}"
+PATH_PROJECT_NAME=""
+CONFIG_PROJECT_NAME=""
+PROJECT_NAME=""
+
+usage() {
+    cat <<EOF
+Usage: $0 [--project <name>] [--help]
+
+Options:
+  --project <name>  Load config from conf/<name>/hpm_upgrade_test.conf
+  --help            Show this help message
+
+Environment:
+  HPM_TEST_PROJECT  Default project name when --project is not provided
+  HPM_TEST_CONFIG   Explicit config path override
+EOF
+}
+
+validate_project_name() {
+    local project_name="$1"
+
+    [[ -z "${project_name}" ]] && return 0
+
+    if [[ ! "${project_name}" =~ ^[A-Za-z0-9._-]+$ ]]; then
+        echo "[ERROR] Invalid project name: ${project_name}" >&2
+        echo "[INFO]  Allowed characters: letters, numbers, dot, underscore, hyphen" >&2
+        exit 1
+    fi
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --project)
+            [[ $# -lt 2 ]] && {
+                echo "[ERROR] Missing value for --project" >&2
+                usage >&2
+                exit 1
+            }
+            REQUESTED_PROJECT_NAME="$2"
+            shift 2
+            ;;
+        --help|-h)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "[ERROR] Unknown argument: $1" >&2
+            usage >&2
+            exit 1
+            ;;
+    esac
+done
+
+validate_project_name "${REQUESTED_PROJECT_NAME}"
+
+if [[ -z "${CONFIG_FILE}" ]]; then
+    if [[ -n "${REQUESTED_PROJECT_NAME}" ]]; then
+        CONFIG_FILE="${CONFIG_ROOT_DIR}/${REQUESTED_PROJECT_NAME}/${CONFIG_BASENAME}"
+    else
+        CONFIG_FILE="${CONFIG_FILE_DEFAULT}"
+    fi
+fi
+
+CONFIG_DIR="$(cd "$(dirname "${CONFIG_FILE}")" 2>/dev/null && pwd)"
 
 # -----------------------------------------------------------------------------
 # [USER CONFIG]
 # -----------------------------------------------------------------------------
 if [[ ! -f "${CONFIG_FILE}" ]]; then
     echo "[ERROR] Config file not found: ${CONFIG_FILE}" >&2
-    echo "[INFO]  Copy ${SCRIPT_DIR}/hpm_upgrade_test.conf.example -> ${SCRIPT_DIR}/hpm_upgrade_test.conf and update values." >&2
+    if [[ -n "${REQUESTED_PROJECT_NAME}" ]]; then
+        echo "[INFO]  Create ${CONFIG_ROOT_DIR}/${REQUESTED_PROJECT_NAME}/${CONFIG_BASENAME} from ${SCRIPT_DIR}/hpm_upgrade_test.conf.example." >&2
+    else
+        echo "[INFO]  Copy ${SCRIPT_DIR}/hpm_upgrade_test.conf.example -> ${SCRIPT_DIR}/hpm_upgrade_test.conf and update values." >&2
+    fi
     exit 1
+fi
+
+CONFIG_DIR="$(cd "$(dirname "${CONFIG_FILE}")" && pwd)"
+
+if [[ "${CONFIG_FILE}" == "${CONFIG_ROOT_DIR}/"*"/${CONFIG_BASENAME}" ]]; then
+    PATH_PROJECT_NAME="${CONFIG_FILE#${CONFIG_ROOT_DIR}/}"
+    PATH_PROJECT_NAME="${PATH_PROJECT_NAME%/${CONFIG_BASENAME}}"
 fi
 
 # shellcheck disable=SC1090
 source "${CONFIG_FILE}"
+
+CONFIG_PROJECT_NAME="${PROJECT_NAME:-}"
+CONFIG_PROJECT_NAME="${CONFIG_PROJECT_NAME:-${PROJECT:-}}"
+CONFIG_PROJECT_NAME="${CONFIG_PROJECT_NAME:-${PLATFORM_NAME:-}}"
+PROJECT_NAME="${REQUESTED_PROJECT_NAME:-${CONFIG_PROJECT_NAME:-${PATH_PROJECT_NAME}}}"
+validate_project_name "${PROJECT_NAME}"
 
 if [[ -z "${BMC_IP:-}" || -z "${BMC_USER:-}" || -z "${BMC_PASS_FILE:-}" || -z "${TEST_CASE:-}" ]]; then
     echo "[ERROR] Missing required config values in ${CONFIG_FILE}" >&2
@@ -55,7 +139,11 @@ fi
 # -----------------------------------------------------------------------------
 SESSION="hpm_upgrade_test"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-LOG_DIR="${SCRIPT_DIR}/logs"
+if [[ -n "${PROJECT_NAME}" ]]; then
+    LOG_DIR="${SCRIPT_DIR}/logs/${PROJECT_NAME}/${TIMESTAMP}"
+else
+    LOG_DIR="${SCRIPT_DIR}/logs"
+fi
 LOG_HOST="${LOG_DIR}/host_hpm${LOG_SUFFIX}.log"
 LOG_IPMID="${LOG_DIR}/bmc_ipmid${LOG_SUFFIX}.log"
 LOG_JOURNAL="${LOG_DIR}/bmc_journal${LOG_SUFFIX}.log"
@@ -138,6 +226,8 @@ main() {
     log_info "==============================="
     log_info " HPM Upgrade Test"
     log_info " Timestamp : ${TIMESTAMP}"
+    log_info " Project   : ${PROJECT_NAME:-default}"
+    log_info " Config    : ${CONFIG_FILE}"
     log_info " BMC IP      : ${BMC_IP}"
     log_info " Interactive : ${INTERACTIVE}"
     log_info " Command     : ${FULL_CMD}"
