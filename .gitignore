@@ -1,6 +1,9 @@
 # Local/private config
 hpm_upgrade_test.conf
 
+# Dev notes
+dev_plan.md
+
 # Credentials
 bmc_pass
 bmc_pass_g5
