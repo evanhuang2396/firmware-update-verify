@@ -18,7 +18,7 @@ A test harness for verifying BMC firmware upgrades via IPMI HPM protocol. It ope
 | Pane | Script | Purpose |
 |------|--------|---------|
 | 0 | `bmc_ipmid_log.sh` | Streams BMC `ipmid` debug output filtered by IPMI command codes |
-| 1 | `bmc_journal_log.sh` | Streams `journalctl` for firmware-related systemd services |
+| 1 | `bmc_journal_log.sh` | Streams `journalctl` for firmware-related systemd services from the current run time onward |
 | 2 | `host_hpm_upgrade.sh` | Runs the `spv_ipmi` / ISC upgrade command |
 
 ---
@@ -184,7 +184,7 @@ If you run the legacy root config without `PROJECT_NAME`, logs continue to be wr
 | `hpm_upgrade_test.sh` | Main entry point — validates config, builds tmux layout, orchestrates all panes |
 | `host_hpm_upgrade.sh` | Waits for BMC ipmid filter to be ready, then runs the upgrade command |
 | `bmc_ipmid_log.sh` | SSH into BMC, restarts ipmid with debug filters, streams output |
-| `bmc_journal_log.sh` | SSH into BMC, follows journalctl for firmware update services |
+| `bmc_journal_log.sh` | SSH into BMC, follows journalctl for firmware update services starting from the current run |
 | `hpm_upgrade_test.conf.example` | Template configuration file |
 
 ---

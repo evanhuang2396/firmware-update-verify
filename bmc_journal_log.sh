@@ -22,9 +22,12 @@ echo "=== journalctl log start: $(date) ===" | tee -a "${LOG_FILE}"
 echo "BMC: ${BMC_USER}@${BMC_IP}" | tee -a "${LOG_FILE}"
 
 sshpass -f "${BMC_PASS_FILE}" ssh ${SSH_OPTS} "${BMC_USER}@${BMC_IP}" '
-    journalctl -f -u xyz.openbmc_project.Software.BMC.Updater &
-    journalctl -f -u xyz.openbmc_project.Software.Version &
-    journalctl -f -u xyz.openbmc_project.Software.Download &
-    journalctl -f | grep fwupd &
+    START_TIME="$(date "+%Y-%m-%d %H:%M:%S")"
+    echo "=== journalctl since: ${START_TIME} ==="
+    journalctl --since "${START_TIME}" -f -u xyz.openbmc_project.Software.BMC.Updater &
+    journalctl --since "${START_TIME}" -f -u xyz.openbmc_project.Software.Version &
+    journalctl --since "${START_TIME}" -f -u xyz.openbmc_project.Software.Download &
+    journalctl --since "${START_TIME}" -f -t fwupd &
+    journalctl --since "${START_TIME}" -f -t sh &
     wait
-' 2>&1 | sed -u -e 's/\r$//' -e '/^[[:space:]]*$/d' | tee -a "${LOG_FILE}"
+' 2>&1 | tee -a "${LOG_FILE}"
