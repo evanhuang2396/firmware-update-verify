@@ -110,6 +110,8 @@ if [[ -z "${BMC_IP:-}" || -z "${BMC_USER:-}" || -z "${BMC_PASS_FILE:-}" || -z "$
     exit 1
 fi
 
+BMC_SSH_PORT="${BMC_SSH_PORT:-22}"
+
 if [[ "${BMC_PASS_FILE}" != /* ]]; then
     BMC_PASS_FILE="${SCRIPT_DIR}/${BMC_PASS_FILE#./}"
 fi
@@ -148,7 +150,7 @@ LOG_HOST="${LOG_DIR}/host_hpm${LOG_SUFFIX}.log"
 LOG_IPMID="${LOG_DIR}/bmc_ipmid${LOG_SUFFIX}.log"
 LOG_JOURNAL="${LOG_DIR}/bmc_journal${LOG_SUFFIX}.log"
 
-SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=10"
+SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=10 -p ${BMC_SSH_PORT}"
 READY_FLAG="/tmp/hpm_test_ipmid_ready"
 BMC_CLEANUP_PATTERNS=("dbgutil" "journalctl.*Updater" "journalctl.*Version" "journalctl.*Download" "journalctl.*fwupd")
 
@@ -161,7 +163,7 @@ log_error() { echo -e "\e[31m[ERROR]\e[0m $*" >&2; }
 
 check_dependencies() {
     local missing=()
-    for cmd in tmux sshpass ssh spv_ipmi; do
+    for cmd in tmux sshpass ssh; do
         command -v "$cmd" &>/dev/null || missing+=("$cmd")
     done
     if [[ "${INTERACTIVE}" == "true" ]] && ! command -v expect &>/dev/null; then
@@ -177,9 +179,9 @@ check_files() {
 }
 
 check_bmc_connection() {
-    log_info "Checking BMC SSH connection to ${BMC_IP}..."
+    log_info "Checking BMC SSH connection to ${BMC_IP}:${BMC_SSH_PORT}..."
     if ! sshpass -f "${BMC_PASS_FILE}" ssh ${SSH_OPTS} "${BMC_USER}@${BMC_IP}" "echo ok" &>/dev/null; then
-        log_error "Cannot connect to BMC at ${BMC_IP}"
+        log_error "Cannot connect to BMC at ${BMC_IP}:${BMC_SSH_PORT}"
         exit 1
     fi
     log_info "BMC connection OK"
@@ -228,7 +230,7 @@ main() {
     log_info " Timestamp : ${TIMESTAMP}"
     log_info " Project   : ${PROJECT_NAME:-default}"
     log_info " Config    : ${CONFIG_FILE}"
-    log_info " BMC IP      : ${BMC_IP}"
+    log_info " BMC IP:Port : ${BMC_IP}:${BMC_SSH_PORT}"
     log_info " Interactive : ${INTERACTIVE}"
     log_info " Command     : ${FULL_CMD}"
     log_info "==============================="
@@ -271,13 +273,13 @@ main() {
 
     # Pane 0: ipmid log
     tmux send-keys -t "${SESSION}:0.0" \
-        "bash '${SCRIPT_DIR}/bmc_ipmid_log.sh' '${BMC_IP}' '${BMC_USER}' '${BMC_PASS_FILE}' '${LOG_IPMID}'" Enter
+        "bash '${SCRIPT_DIR}/bmc_ipmid_log.sh' '${BMC_IP}' '${BMC_USER}' '${BMC_PASS_FILE}' '${LOG_IPMID}' '${BMC_SSH_PORT}'" Enter
 
     sleep 0.5
 
     # Pane 1: journalctl log
     tmux send-keys -t "${SESSION}:0.1" \
-        "bash '${SCRIPT_DIR}/bmc_journal_log.sh' '${BMC_IP}' '${BMC_USER}' '${BMC_PASS_FILE}' '${LOG_JOURNAL}'" Enter
+        "bash '${SCRIPT_DIR}/bmc_journal_log.sh' '${BMC_IP}' '${BMC_USER}' '${BMC_PASS_FILE}' '${LOG_JOURNAL}' '${BMC_SSH_PORT}'" Enter
 
     sleep 0.5
 

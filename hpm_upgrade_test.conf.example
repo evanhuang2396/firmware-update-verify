@@ -8,6 +8,7 @@
 
 BMC_IP="192.168.10.252"
 BMC_USER="root"
+BMC_SSH_PORT="22"
 # Optional project/platform name. Leave unset when using --project.
 # PROJECT_NAME="venice_2_18"
 BMC_PASS_FILE="${SCRIPT_DIR}/bmc_pass"

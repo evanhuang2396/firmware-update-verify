@@ -2,15 +2,16 @@
 # =============================================================================
 # BMC ipmid Log Monitor
 # Called by hpm_upgrade_test.sh — do not run directly
-# Args: <BMC_IP> <BMC_USER> <BMC_PASS_FILE> <LOG_FILE>
+# Args: <BMC_IP> <BMC_USER> <BMC_PASS_FILE> <LOG_FILE> <BMC_SSH_PORT>
 # =============================================================================
 
 BMC_IP="$1"
 BMC_USER="$2"
 BMC_PASS_FILE="$3"
 LOG_FILE="$4"
+BMC_SSH_PORT="${5:-22}"
 
-SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=10"
+SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=10 -p ${BMC_SSH_PORT}"
 
 if [[ -z "${BMC_IP}" || -z "${BMC_USER}" || -z "${BMC_PASS_FILE}" || -z "${LOG_FILE}" ]]; then
     echo "[ERROR] Missing arguments" >&2
