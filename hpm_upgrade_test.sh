@@ -128,6 +128,15 @@ if [[ ! -f "${BMC_PASS_FILE}" ]]; then
 fi
 BMC_PASS="$(< "${BMC_PASS_FILE}")"
 
+if [[ "${TEST_CASE}" == *'${FW_FILE}'* && -z "${FW_FILE:-}" ]]; then
+    log_error "TEST_CASE references \${FW_FILE} but FW_FILE is not set in ${CONFIG_FILE}"
+    exit 1
+fi
+if [[ "${TEST_CASE}" == *'${HPM_FILE}'* && -z "${HPM_FILE:-}" ]]; then
+    log_error "TEST_CASE references \${HPM_FILE} but HPM_FILE is not set in ${CONFIG_FILE}"
+    exit 1
+fi
+
 eval "FULL_CMD=\"${TEST_CASE}\""
 
 if [[ "${FULL_CMD}" == *"hpm upgrade"* ]]; then

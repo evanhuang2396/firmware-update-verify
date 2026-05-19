@@ -17,3 +17,6 @@ logs/
 
 # local execute cmd
 exec.sh
+
+# VS Code workspace settings
+*.code-workspace
