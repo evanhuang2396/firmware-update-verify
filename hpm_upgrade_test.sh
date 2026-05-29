@@ -76,6 +76,13 @@ fi
 CONFIG_DIR="$(cd "$(dirname "${CONFIG_FILE}")" 2>/dev/null && pwd)"
 
 # -----------------------------------------------------------------------------
+# Helpers
+# -----------------------------------------------------------------------------
+log_info()  { echo -e "\e[32m[INFO]\e[0m  $*"; }
+log_warn()  { echo -e "\e[33m[WARN]\e[0m  $*"; }
+log_error() { echo -e "\e[31m[ERROR]\e[0m $*" >&2; }
+
+# -----------------------------------------------------------------------------
 # [USER CONFIG]
 # -----------------------------------------------------------------------------
 if [[ ! -f "${CONFIG_FILE}" ]]; then
@@ -162,13 +169,6 @@ LOG_JOURNAL="${LOG_DIR}/bmc_journal${LOG_SUFFIX}.log"
 SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=10 -p ${BMC_SSH_PORT}"
 READY_FLAG="/tmp/hpm_test_ipmid_ready"
 BMC_CLEANUP_PATTERNS=("dbgutil" "journalctl.*Updater" "journalctl.*Version" "journalctl.*Download" "journalctl.*fwupd")
-
-# -----------------------------------------------------------------------------
-# Helpers
-# -----------------------------------------------------------------------------
-log_info()  { echo -e "\e[32m[INFO]\e[0m  $*"; }
-log_warn()  { echo -e "\e[33m[WARN]\e[0m  $*"; }
-log_error() { echo -e "\e[31m[ERROR]\e[0m $*" >&2; }
 
 check_dependencies() {
     local missing=()
