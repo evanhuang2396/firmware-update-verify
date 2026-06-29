@@ -175,8 +175,8 @@ check_dependencies() {
     for cmd in tmux sshpass ssh; do
         command -v "$cmd" &>/dev/null || missing+=("$cmd")
     done
-    if [[ "${INTERACTIVE}" == "true" ]] && ! command -v expect &>/dev/null; then
-        missing+=("expect")
+    if [[ "${INTERACTIVE}" == "true" ]] && ! command -v uv &>/dev/null; then
+        missing+=("uv")
     fi
     [[ ${#missing[@]} -gt 0 ]] && { log_error "Missing: ${missing[*]}"; exit 1; }
 }

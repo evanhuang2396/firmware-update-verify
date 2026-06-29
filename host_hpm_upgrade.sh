@@ -8,6 +8,7 @@
 FULL_CMD="$1"
 INTERACTIVE="$2"
 LOG_FILE="$3"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [[ -z "${FULL_CMD}" || -z "${INTERACTIVE}" || -z "${LOG_FILE}" ]]; then
     echo "[ERROR] Missing arguments" >&2
@@ -29,38 +30,7 @@ done
 echo "=== ipmid filter ready, starting HPM upgrade ===" | tee -a "${LOG_FILE}"
 
 if [[ "${INTERACTIVE}" == "true" ]]; then
-    export FULL_CMD LOG_FILE
-    expect <<'EOF'
-set timeout 300
-log_file -a $env(LOG_FILE)
-set cmd $env(FULL_CMD)
-
-spawn bash -lc $cmd
-
-expect {
-    "Continue ignoring*" {
-        send "y\r"
-        exp_continue
-    }
-    "Services may be affected*" {
-        send "y\r"
-        exp_continue
-    }
-    timeout {
-        puts "\n\[ERROR\] Timed out waiting for prompt or completion"
-        exit 1
-    }
-    eof {
-        catch wait result
-        set rc [lindex $result 3]
-        if {$rc != 0} {
-            puts "\n\[ERROR\] Command exited with rc=$rc"
-            exit $rc
-        }
-        puts "\n=== spv_ipmi process ended ==="
-    }
-}
-EOF
+    uv run --with pexpect "${SCRIPT_DIR}/hpm_interact.py" "${FULL_CMD}" "${LOG_FILE}"
 else
     bash -lc "${FULL_CMD}" 2>&1 | tee -a "${LOG_FILE}"
     cmd_rc=${PIPESTATUS[0]}
