@@ -11,7 +11,7 @@ BMC_PASS_FILE="$3"
 LOG_FILE="$4"
 BMC_SSH_PORT="${5:-22}"
 
-SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=10 -p ${BMC_SSH_PORT}"
+SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -p ${BMC_SSH_PORT}"
 
 if [[ -z "${BMC_IP}" || -z "${BMC_USER}" || -z "${BMC_PASS_FILE}" || -z "${LOG_FILE}" ]]; then
     echo "[ERROR] Missing arguments" >&2

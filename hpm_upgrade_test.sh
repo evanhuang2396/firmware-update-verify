@@ -166,7 +166,7 @@ LOG_HOST="${LOG_DIR}/host_hpm${LOG_SUFFIX}.log"
 LOG_IPMID="${LOG_DIR}/bmc_ipmid${LOG_SUFFIX}.log"
 LOG_JOURNAL="${LOG_DIR}/bmc_journal${LOG_SUFFIX}.log"
 
-SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=10 -p ${BMC_SSH_PORT}"
+SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -p ${BMC_SSH_PORT}"
 READY_FLAG="/tmp/hpm_test_ipmid_ready"
 BMC_CLEANUP_PATTERNS=("dbgutil" "journalctl.*Updater" "journalctl.*Version" "journalctl.*Download" "journalctl.*fwupd")
 
@@ -288,7 +288,7 @@ main() {
 
     # Pane 1: journalctl log
     tmux send-keys -t "${SESSION}:0.1" \
-        "bash '${SCRIPT_DIR}/bmc_journal_log.sh' '${BMC_IP}' '${BMC_USER}' '${BMC_PASS_FILE}' '${LOG_JOURNAL}' '${BMC_SSH_PORT}'" Enter
+        "bash '${SCRIPT_DIR}/bmc_journal_log.sh' '${BMC_IP}' '${BMC_USER}' '${BMC_PASS_FILE}' '${LOG_JOURNAL}' '${BMC_SSH_PORT}' '${JOURNAL_PROFILE:-default}'" Enter
 
     sleep 0.5
 
