@@ -15,7 +15,7 @@ def main():
     with open(log_file_path, "a") as logf:
         child = pexpect.spawn(
             "bash", ["-lc", cmd],
-            timeout=300,
+            timeout=1200,
             logfile=logf,
             encoding="utf-8",
         )

@@ -22,3 +22,8 @@ TEST_CASE='spv_ipmi -U root -P ${BMC_PASS} -H ${BMC_IP} -I lanplus -C 17 -z 3000
 
 # Optional log filename suffix (e.g. "_round1"). Leave empty for no suffix.
 LOG_SUFFIX=""
+
+# Optional: journalctl monitoring profile passed to bmc_journal_log.sh.
+# "g5" watches the PLDM-based stack (Software.Manager, PLDM, fwupd, sh units).
+# Any other value / unset watches the default Software.BMC.Updater stack.
+# JOURNAL_PROFILE="g5"

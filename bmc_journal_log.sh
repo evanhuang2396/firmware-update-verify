@@ -24,13 +24,12 @@ fi
 echo "=== journalctl log start: $(date) ===" | tee -a "${LOG_FILE}"
 echo "BMC: ${BMC_USER}@${BMC_IP}" | tee -a "${LOG_FILE}"
 
-if [[ "${JOURNAL_PROFILE}" == "vrc2" ]]; then
+if [[ "${JOURNAL_PROFILE}" == "g5" ]]; then
     REMOTE_CMDS='
     START_TIME="$(date "+%Y-%m-%d %H:%M:%S")"
     echo "=== journalctl since: ${START_TIME} ==="
     journalctl --since "${START_TIME}" -f -u xyz.openbmc_project.Software.Manager &
     journalctl --since "${START_TIME}" -f -u xyz.openbmc_project.PLDM &
-    journalctl --since "${START_TIME}" -f | grep fwupd &
     journalctl --since "${START_TIME}" -f _COMM=sh &
     wait'
 else
@@ -41,7 +40,7 @@ else
     journalctl --since "${START_TIME}" -f -u xyz.openbmc_project.Software.Version &
     journalctl --since "${START_TIME}" -f -u xyz.openbmc_project.Software.Download &
     journalctl --since "${START_TIME}" -f -t fwupd &
-    journalctl --since "${START_TIME}" -f -t sh &
+    journalctl --since "${START_TIME}" -f _COMM=sh &
     wait'
 fi
 
